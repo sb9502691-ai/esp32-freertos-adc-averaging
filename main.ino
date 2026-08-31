@@ -14,16 +14,16 @@ static SemaphoreHandle_t mutavg;
 int analog_data;
 static String str;
 static uint32_t Avg = 0;
+// this ISR function gets called every 100ms
 void IRAM_ATTR ADCread()
 {
   analog_data = analogRead(4);
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-
-  // Mutexes are illegal in ISRs, but Queues are already inherently safe!
-  // Try sending to que1 using the safe ISR function
+  
   xQueueSendFromISR(que1, &analog_data, &xHigherPriorityTaskWoken);
-  // Yield if a higher priority task was woken up
+  
 }
+// this task takes all values from queues if queue is full and averages all values
 void taskA (void *parameter)
 {
   
@@ -44,6 +44,8 @@ void taskA (void *parameter)
     }
   }
 }
+
+// This task serial prints prints the serial read, if serial red is "avg" then it prints the average value calculated by taskA
 void taskB(void *parameter)
 {
   while(1)
